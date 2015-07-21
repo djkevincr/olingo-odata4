@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.olingo.commons.api.edm.FullQualifiedName;
 import org.apache.olingo.commons.api.edm.provider.*;
 
 import java.io.IOException;
@@ -47,9 +48,9 @@ public class ClientCsdlDefinitionsDeserializer extends JsonDeserializer<ClientJs
             Map.Entry<String, JsonNode> typeObject;
             typeObject = iterator.next();
             String combinedNamespaceType = typeObject.getKey();
-            String[] arrayToken=combinedNamespaceType.split("\\.");
-            String typeName = arrayToken[arrayToken.length-1];
-            String nameSpace = combinedNamespaceType.replace("."+typeName,"");
+            FullQualifiedName fullQualifiedTypeName = new FullQualifiedName(combinedNamespaceType);
+            String typeName = fullQualifiedTypeName.getName();
+            String nameSpace = fullQualifiedTypeName.getNamespace();
             if(typeObject.getValue().has("enum")){
                 final CsdlEnumType enumType = new ClientCsdlEnumTypeDeserializer(nameSpace,typeName).deserialize(
                         tree.get(typeObject.getKey()).traverse(parser.getCodec()), ctxt);

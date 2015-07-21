@@ -48,8 +48,7 @@ public class ClientCsdlEntitySetDeserializer extends JsonDeserializer<CsdlEntity
         entitySet.setName(name);
         String entityTypeName=tree.get("entityType").asText();
         String aliasReplaced = entityTypeName.replace(schema.getAlias(), schema.getNamespace());
-        String typeNameStr = aliasReplaced.replace(schema.getNamespace()+".","");
-        FullQualifiedName typeName = new FullQualifiedName(schema.getNamespace(),typeNameStr);
+        FullQualifiedName typeName = new FullQualifiedName(aliasReplaced);
         entitySet.setType(typeName);
         //toDo navigational property bindings
         return entitySet;
