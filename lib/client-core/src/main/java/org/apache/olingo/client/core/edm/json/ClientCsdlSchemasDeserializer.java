@@ -24,11 +24,14 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.olingo.commons.api.edm.provider.CsdlAction;
 import org.apache.olingo.commons.api.edm.provider.CsdlSchema;
 import org.apache.olingo.commons.api.edm.provider.CsdlEntityContainer;
 import org.apache.olingo.commons.api.edm.provider.CsdlEntitySet;
+import org.apache.olingo.commons.api.edm.provider.CsdlSingleton;
+import org.apache.olingo.commons.api.edm.provider.CsdlAction;
+import org.apache.olingo.commons.api.edm.provider.CsdlActionImport;
 import org.apache.olingo.commons.api.edm.provider.CsdlFunction;
+import org.apache.olingo.commons.api.edm.provider.CsdlFunctionImport;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -69,6 +72,38 @@ public class ClientCsdlSchemasDeserializer extends JsonDeserializer<ClientJsonSc
                             .deserialize(entitySetNode.traverse(parser.getCodec()), ctxt);
                     container.getEntitySets().add(entitySet);
                 }
+                if (entityContainer.has("singletons")) {
+                    Iterator<Map.Entry<String, JsonNode>> itr2 = entityContainer.get("singletons").fields();
+                    while (itr.hasNext()) {
+                        Map.Entry<String, JsonNode> singletonEntry = itr2.next();
+                        JsonNode singletonNode = singletonEntry.getValue();
+                        CsdlSingleton singleton = new ClientCsdlSingletonDeserializer(singletonEntry.getKey())
+                                .deserialize(singletonNode.traverse(parser.getCodec()), ctxt);
+                        container.getSingletons().add(singleton);
+                    }
+                }
+                if (entityContainer.has("functionImports")) {
+                    Iterator<Map.Entry<String, JsonNode>> itr3 = entityContainer.get("functionImports").fields();
+                    while (itr.hasNext()) {
+                        Map.Entry<String, JsonNode> functionImportEntry = itr3.next();
+                        JsonNode functionImportNode = functionImportEntry.getValue();
+                        CsdlFunctionImport functionImport = new ClientCsdlFunctionImportDeserializer
+                                (functionImportEntry.getKey())
+                                .deserialize(functionImportNode.traverse(parser.getCodec()), ctxt);
+                        container.getFunctionImports().add(functionImport);
+                    }
+                }
+                if (entityContainer.has("actionImports")) {
+                    Iterator<Map.Entry<String, JsonNode>> itr4 = entityContainer.get("actionImports").fields();
+                    while (itr.hasNext()) {
+                        Map.Entry<String, JsonNode> actionImportEntry = itr4.next();
+                        JsonNode actionImportNode = actionImportEntry.getValue();
+                        CsdlActionImport actionImport = new ClientCsdlActionImportDeserializer
+                                (actionImportEntry.getKey())
+                                .deserialize(actionImportNode.traverse(parser.getCodec()), ctxt);
+                        container.getActionImports().add(actionImport);
+                    }
+                }
             }
 
             JsonNode actions = schemaNode.getValue().get("actions");
@@ -92,7 +127,6 @@ public class ClientCsdlSchemasDeserializer extends JsonDeserializer<ClientJsonSc
                     schema.getFunctions().add(function);
                 }
             }
-
         }
         return jsonCsdl;
     }
