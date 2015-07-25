@@ -22,23 +22,28 @@ package org.apache.olingo.client.core.edm.json;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.olingo.commons.api.edm.FullQualifiedName;
 import org.apache.olingo.commons.api.edm.provider.CsdlEntitySet;
+import org.apache.olingo.commons.api.edm.provider.CsdlNavigationPropertyBinding;
 import org.apache.olingo.commons.api.edm.provider.CsdlSchema;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class ClientCsdlEntitySetDeserializer extends JsonDeserializer<CsdlEntitySet> {
 
     private String name;
     private CsdlSchema schema;
 
-    public ClientCsdlEntitySetDeserializer(CsdlSchema schema,String name){
-        this.schema =schema;
+    public ClientCsdlEntitySetDeserializer(CsdlSchema schema, String name) {
+        this.schema = schema;
         this.name = name;
     }
-
 
     @Override
     public CsdlEntitySet deserialize(final JsonParser parser, final DeserializationContext ctxt)
@@ -46,11 +51,27 @@ public class ClientCsdlEntitySetDeserializer extends JsonDeserializer<CsdlEntity
         final ObjectNode tree = parser.getCodec().readTree(parser);
         CsdlEntitySet entitySet = new CsdlEntitySet();
         entitySet.setName(name);
-        String entityTypeName=tree.get("entityType").asText();
+        String entityTypeName = tree.get("entityType").asText();
         String aliasReplaced = entityTypeName.replace(schema.getAlias(), schema.getNamespace());
         FullQualifiedName typeName = new FullQualifiedName(aliasReplaced);
         entitySet.setType(typeName);
-        //toDo navigational property bindings
+        if (tree.has("includeInServiceDocument")) {
+            entitySet.setIncludeInServiceDocument(tree.get("includeInServiceDocument").asBoolean());
+        }
+        if (tree.has("navigationPropertyBindings")) {
+            JsonNode propertyBindingsNodes = tree.get("navigationPropertyBindings");
+            Iterator<Map.Entry<String, JsonNode>> iterator = propertyBindingsNodes.fields();
+            List<CsdlNavigationPropertyBinding> bindingsList = new ArrayList<CsdlNavigationPropertyBinding>();
+            while (iterator.hasNext()) {
+                Map.Entry<String, JsonNode> proprtyBindingEntry = iterator.next();
+                JsonNode propertyBindingNode = proprtyBindingEntry.getValue();
+                CsdlNavigationPropertyBinding navigationPropertyBinding =
+                        new ClientCsdlNavigationalPropertyBindingDeserializer(proprtyBindingEntry.getKey()).
+                                deserialize(propertyBindingNode.traverse(parser.getCodec()), ctxt);
+                bindingsList.add(navigationPropertyBinding);
+            }
+            entitySet.setNavigationPropertyBindings(bindingsList);
+        }
         return entitySet;
     }
 }
