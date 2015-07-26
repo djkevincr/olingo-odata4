@@ -64,6 +64,9 @@ public class ClientCsdlSchemasDeserializer extends JsonDeserializer<ClientJsonSc
                 CsdlEntityContainer container = new CsdlEntityContainer();
                 schema.setEntityContainer(container);
                 container.setName(entityContainer.get("name").asText());
+                if(entityContainer.has("extend")){
+                    container.setExtendsContainer(entityContainer.get("extend").asText());
+                }
                 Iterator<Map.Entry<String, JsonNode>> itr = entityContainer.get("entitySets").fields();
                 while (itr.hasNext()) {
                     Map.Entry<String, JsonNode> entitySetEntry = itr.next();
