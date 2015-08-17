@@ -26,9 +26,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.olingo.commons.api.edm.FullQualifiedName;
 import org.apache.olingo.commons.api.edm.provider.CsdlComplexType;
+import org.apache.olingo.commons.api.edm.provider.CsdlNavigationProperty;
+import org.apache.olingo.commons.api.edm.provider.CsdlProperty;
+import org.apache.olingo.commons.api.edm.provider.CsdlReferentialConstraint;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 public class ClientCsdlComplexTypeDeserializer extends JsonDeserializer<CsdlComplexType> {
 
@@ -66,8 +71,25 @@ public class ClientCsdlComplexTypeDeserializer extends JsonDeserializer<CsdlComp
             type.setAbstract(tree.get("abstract").asBoolean());
         }
 
-        if(tree.has("properties")){
-            //toDo add properties deserialization here
+        if (tree.has("properties")) {
+            Iterator<Map.Entry<String, JsonNode>> iterator = tree.get("properties").fields();
+            ArrayList<CsdlNavigationProperty> navigationProperties = new ArrayList<CsdlNavigationProperty>();
+            ArrayList<CsdlProperty> properties = new ArrayList<CsdlProperty>();
+            while (iterator.hasNext()) {
+                Map.Entry<String, JsonNode> entry = iterator.next();
+                if (entry.getValue().has("relationship")) {
+                    final CsdlNavigationProperty property = new ClientCsdlNavigationPropertyDeserializer(entry.getKey())
+                            .deserialize(tree.get("properties").get(entry.getKey()).traverse(parser.getCodec()), ctxt);
+                    navigationProperties.add(property);
+                } else {
+                    final CsdlProperty property = new ClientCsdlPropertyDeserializer(entry.getKey())
+                            .deserialize(tree.get("properties").get(entry.getKey()).traverse(parser.getCodec()), ctxt);
+                    properties.add(property);
+
+                }
+            }
+            type.setNavigationProperties(navigationProperties);
+            type.setProperties(properties);
         }
         return type;
     }
