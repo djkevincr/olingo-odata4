@@ -80,14 +80,14 @@ public class JsonMetadataTest extends AbstractTest {
         assertNotNull(metadata);
         //references size
         assertEquals(metadata.getReferences().size(), 1);
-        assertEquals(metadata.getReferences().get(0).getUri().toASCIIString(),"http://docs.oasis-open.org/odata/" +
+        assertEquals(metadata.getReferences().get(0).getUri().toASCIIString(), "http://docs.oasis-open.org/odata/" +
                 "odata/v4.0/cs02/vocabularies/Org.OData.Core.V1.xml");
         //references includes size
         assertEquals(metadata.getReferences().get(0).getIncludes().size(), 1);
-        assertEquals( metadata.getReferences().get(0).getIncludes().get(0).getAlias(),"Core");
-        assertEquals( metadata.getReferences().get(0).getIncludes().get(0).getNamespace(),"Org.OData.Core.V1");
+        assertEquals(metadata.getReferences().get(0).getIncludes().get(0).getAlias(), "Core");
+        assertEquals(metadata.getReferences().get(0).getIncludes().get(0).getNamespace(), "Org.OData.Core.V1");
         //references include annotations
-        assertEquals(metadata.getReferences().get(0).getIncludeAnnotations().size(),0);
+        assertEquals(metadata.getReferences().get(0).getIncludeAnnotations().size(), 0);
 
 
     }
