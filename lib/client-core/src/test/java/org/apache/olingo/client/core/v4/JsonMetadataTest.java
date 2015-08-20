@@ -90,6 +90,23 @@ public class JsonMetadataTest extends AbstractTest {
         //references include annotations
         assertEquals(metadata.getReferences().get(0).getIncludeAnnotations().size(), 0);
 
+        //singleton
+        final Edm edm3 = getClient().getReader().
+                readMetadata(getClass().getResourceAsStream("metadata.singletons.json"), ODataFormat.JSON);
+        assertNotNull(edm3);
+        assertEquals(edm3.getEntityContainer(
+                new FullQualifiedName("olingo.odata.test1", "container")).getSingletons().size(), 1);
+        EdmSingleton singleton = edm3.getEntityContainer(
+                new FullQualifiedName("olingo.odata.test1", "container")).getSingleton("SINav");
+        assertNotNull(singleton);
+        assertNotNull(singleton.getEntityType());
+        assertEquals(singleton.getEntityType().getName(), "ETTwoKeyNav");
+        assertEquals(singleton.getEntityType().getNamespace(), "olingo.odata.test1");
+        assertNotNull(edm3.getEntityType(new FullQualifiedName("olingo.odata.test1", "ETTwoKeyNav")));
+        assertEquals(edm3.getEntityType(new FullQualifiedName("olingo.odata.test1", "ETTwoKeyNav")),
+                edm3.getEntityContainer(new FullQualifiedName("olingo.odata.test1", "container"))
+                        .getEntitySet("ESTwoKeyNav").getEntityType());
+        assertEquals(singleton.getNavigationPropertyBindings().size(), 3);
 
     }
 
@@ -115,5 +132,6 @@ public class JsonMetadataTest extends AbstractTest {
 
         assertNotNull(third.getEntityContainer());
         assertEquals(third.getEntityContainer().getName(), "container");
+
     }
 }
