@@ -23,6 +23,7 @@ import org.apache.olingo.client.api.ODataClient;
 import org.apache.olingo.client.api.edm.xml.XMLMetadata;
 import org.apache.olingo.client.core.AbstractTest;
 import org.apache.olingo.commons.api.edm.*;
+import org.apache.olingo.commons.api.edm.provider.CsdlSchema;
 import org.apache.olingo.commons.api.format.ODataFormat;
 import org.apache.olingo.commons.core.edm.primitivetype.EdmPrimitiveTypeFactory;
 import org.junit.Test;
@@ -90,5 +91,29 @@ public class JsonMetadataTest extends AbstractTest {
         assertEquals(metadata.getReferences().get(0).getIncludeAnnotations().size(), 0);
 
 
+    }
+
+    @Test
+    public void multipleSchemas() {
+
+        final XMLMetadata metadata = getClient().getDeserializer(ODataFormat.JSON).
+                toMetadata(getClass().getResourceAsStream("metadata.multiple.schema.json"));
+        assertNotNull(metadata);
+        assertEquals(metadata.getSchemas().size(), 3);
+
+        CsdlSchema first = metadata.getSchema("namespace1");
+        assertNotNull(first);
+        assertEquals(first.getAlias(), "Alias1");
+
+        CsdlSchema second = metadata.getSchema("namespace2");
+        assertNotNull(second);
+        assertEquals(second.getAlias(), "Alias2");
+
+        CsdlSchema third = metadata.getSchema("namespace3");
+        assertNotNull(third);
+        assertEquals(third.getAlias(), "Alias3");
+
+        assertNotNull(third.getEntityContainer());
+        assertEquals(third.getEntityContainer().getName(), "container");
     }
 }
