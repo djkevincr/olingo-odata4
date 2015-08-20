@@ -20,6 +20,7 @@
 package org.apache.olingo.client.core.v4;
 
 import org.apache.olingo.client.api.ODataClient;
+import org.apache.olingo.client.api.edm.xml.XMLMetadata;
 import org.apache.olingo.client.core.AbstractTest;
 import org.apache.olingo.commons.api.edm.*;
 import org.apache.olingo.commons.api.format.ODataFormat;
@@ -71,6 +72,23 @@ public class JsonMetadataTest extends AbstractTest {
         assertEquals(EdmPrimitiveTypeFactory.getInstance(EdmPrimitiveTypeKind.Int16),
                 function.getReturnType().getType());
         assertFalse(function.isBound());
+
+
+        //references
+        final XMLMetadata metadata = getClient().getDeserializer(ODataFormat.JSON).
+                toMetadata(getClass().getResourceAsStream("metadata.json"));
+        assertNotNull(metadata);
+        //references size
+        assertEquals(metadata.getReferences().size(), 1);
+        assertEquals(metadata.getReferences().get(0).getUri().toASCIIString(),"http://docs.oasis-open.org/odata/" +
+                "odata/v4.0/cs02/vocabularies/Org.OData.Core.V1.xml");
+        //references includes size
+        assertEquals(metadata.getReferences().get(0).getIncludes().size(), 1);
+        assertEquals( metadata.getReferences().get(0).getIncludes().get(0).getAlias(),"Core");
+        assertEquals( metadata.getReferences().get(0).getIncludes().get(0).getNamespace(),"Org.OData.Core.V1");
+        //references include annotations
+        assertEquals(metadata.getReferences().get(0).getIncludeAnnotations().size(),0);
+
 
     }
 }
