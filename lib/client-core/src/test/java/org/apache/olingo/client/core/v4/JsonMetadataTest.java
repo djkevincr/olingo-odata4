@@ -124,6 +124,24 @@ public class JsonMetadataTest extends AbstractTest {
         assertEquals(actionImport.getUnboundAction().getName(), "UARTString");
         assertEquals(actionImport.getUnboundAction().getNamespace(), "namespace");
 
+        //function imports
+        final Edm edm5 = getClient().getReader().
+                readMetadata(getClass().getResourceAsStream("metadata.function.imports.json"), ODataFormat.JSON);
+        assertNotNull(edm5);
+        assertNotNull(edm5.getEntityContainer(
+                new FullQualifiedName("namespace", "container")));
+        assertNotNull(edm5.getEntityContainer(
+                new FullQualifiedName("namespace", "container")).getFunctionImport("FICRTCollESTwoKeyNavParam"));
+        EdmFunctionImport functionImport = edm5.getEntityContainer(
+                new FullQualifiedName("namespace", "container")).getFunctionImport("FICRTCollESTwoKeyNavParam");
+        assertEquals(functionImport.isIncludeInServiceDocument(), true);
+        assertEquals(functionImport.getUnboundFunctions().size(), 1);
+        assertEquals(functionImport.getUnboundFunctions().get(0).getName(), "UFCRTCollETTwoKeyNavParam");
+        assertEquals(EdmPrimitiveTypeFactory.getInstance(EdmPrimitiveTypeKind.Int16),
+                functionImport.getUnboundFunctions().get(0).getReturnType().getType());
+        assertEquals(functionImport.getReturnedEntitySet().getName(), "ESTwoKeyNav");
+        assertEquals(functionImport.getReturnedEntitySet().isIncludeInServiceDocument(), true);
+
     }
 
     @Test
