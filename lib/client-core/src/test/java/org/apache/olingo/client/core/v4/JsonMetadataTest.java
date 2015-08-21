@@ -40,6 +40,7 @@ public class JsonMetadataTest extends AbstractTest {
 
     @Test
     public void parse() {
+
         //container
         final Edm edm = getClient().getReader().
                 readMetadata(getClass().getResourceAsStream("metadata.json"), ODataFormat.JSON);
@@ -107,6 +108,21 @@ public class JsonMetadataTest extends AbstractTest {
                 edm3.getEntityContainer(new FullQualifiedName("olingo.odata.test1", "container"))
                         .getEntitySet("ESTwoKeyNav").getEntityType());
         assertEquals(singleton.getNavigationPropertyBindings().size(), 3);
+
+
+        //action imports
+        final Edm edm4 = getClient().getReader().
+                readMetadata(getClass().getResourceAsStream("metadata.action.imports.json"), ODataFormat.JSON);
+        assertNotNull(edm4);
+        assertNotNull(edm4.getEntityContainer(
+                new FullQualifiedName("namespace", "container")));
+        assertNotNull(edm4.getEntityContainer(
+                new FullQualifiedName("namespace", "container")).getActionImport("AIRTString"));
+        EdmActionImport actionImport = edm4.getEntityContainer(
+                new FullQualifiedName("namespace", "container")).getActionImport("AIRTString");
+        assertNotNull(actionImport.getUnboundAction());
+        assertEquals(actionImport.getUnboundAction().getName(), "UARTString");
+        assertEquals(actionImport.getUnboundAction().getNamespace(), "namespace");
 
     }
 
